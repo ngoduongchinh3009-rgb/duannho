@@ -1,0 +1,88 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 30px;
+            background-color: black;
+            color: white;
+            text-align: center;
+        }
+
+        button {
+            font-size: 20px;
+        }
+
+        button:hover {
+            cursor: pointer;
+            color: white;
+            background-color: black;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Đồng hồ bấm giờ</h1>
+    <p><span id="seconds">00</span>:<span id="tens">00</span></p>
+    <button id="start">Start</button>
+    <button id="stop">Stop</button>
+    <button id="reset">Reset</button>
+
+    <script>
+        let seconds = 0;
+        let tens = 0;
+        let interval;
+        let newSeconds = document.getElementById("seconds");
+        let newTens = document.getElementById("tens");
+        let buttonStart = document.getElementById("start");
+        let buttonStop = document.getElementById("stop");
+        let buttonReset = document.getElementById("reset");
+
+        buttonStart.addEventListener("click",
+            function () {
+                clearInterval(interval);
+                interval = setInterval(startTimer, 10);
+            }
+        )
+        function startTimer() {
+            tens++;
+            if (tens <= 9) {
+                newTens.innerHTML = "0" + tens;
+            }
+            if (tens > 9) {
+                newTens.innerHTML = tens;
+            }
+            if (tens > 60) {
+                tens = 0;
+                newTens.innerHTML = "0" + 0;
+                console.log(seconds);
+                seconds++;
+                newSeconds.innerHTML = seconds;
+            }
+            if (seconds <= 9) {
+                newSeconds.innerHTML = "0" + seconds;
+            }
+        }
+        buttonStop.addEventListener("click",
+            function () {
+                clearInterval(interval);
+            }
+        )
+        buttonReset.addEventListener("click",
+            function () {
+                clearInterval(interval);
+                tens = 0;
+                seconds = 0;
+                newTens = "0" + tens;
+                newSeconds = "0" + seconds;
+            }
+        )
+
+    </script>
+</body>
+
+</html>
