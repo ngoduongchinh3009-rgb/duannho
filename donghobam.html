@@ -56,12 +56,12 @@
             if (tens > 9) {
                 newTens.innerHTML = tens;
             }
-            if (tens > 60) {
+            if (tens >= 100) {
                 tens = 0;
                 newTens.innerHTML = "0" + 0;
-                console.log(seconds);
                 seconds++;
                 newSeconds.innerHTML = seconds;
+
             }
             if (seconds <= 9) {
                 newSeconds.innerHTML = "0" + seconds;
@@ -77,8 +77,8 @@
                 clearInterval(interval);
                 tens = 0;
                 seconds = 0;
-                newTens = "0" + tens;
-                newSeconds = "0" + seconds;
+                newTens.innerHTML = "00";
+                newSeconds.innerHTML = "00";
             }
         )
 
