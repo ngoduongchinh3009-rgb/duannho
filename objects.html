@@ -1,9 +1,11 @@
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản lý thiết bị</title>
+
     <style>
         body {
             font-family: Arial;
@@ -51,6 +53,8 @@
         #add-btn {
             margin-left: auto;
             padding: 10px;
+            background: #2ecc71;
+            color: white;
         }
 
         .edit-btn {
@@ -63,6 +67,7 @@
             color: white;
         }
 
+        /* Popup */
         .popup {
             display: none;
             position: fixed;
@@ -84,7 +89,7 @@
 
         .popup-content input {
             width: 100%;
-            padding: 5px;
+            padding: 6px;
             margin: 5px 0;
         }
 
@@ -98,11 +103,14 @@
 </head>
 
 <body>
+
     <h2>Quản lý thiết bị</h2>
+
     <div id="top-bar">
         <input type="text" id="search" placeholder="Tìm kiếm thiết bị...">
         <button id="add-btn">Thêm sản phẩm</button>
     </div>
+
     <table>
         <thead>
             <tr>
@@ -113,135 +121,149 @@
                 <th>Thao tác</th>
             </tr>
         </thead>
-        <tbody id="device-table">
-            <!-- Hiển thị dữ liệu -->
-        </tbody>
+        <tbody id="device-table"></tbody>
     </table>
+
+    <!-- Popup -->
     <div id="popup" class="popup">
         <div class="popup-content">
-            <span class="close-btn" id="close-btn">X</span>
+            <span id="close-btn" class="close-btn">X</span>
             <h3 id="popup-title">Thêm sản phẩm</h3>
+
             <input type="text" id="input-name" placeholder="Tên sản phẩm">
             <input type="text" id="input-color" placeholder="Màu sắc">
             <input type="text" id="input-capacity" placeholder="Dung lượng">
+
             <button id="save-btn">Lưu</button>
         </div>
     </div>
+
     <script>
+        let dataList = [];   // Lưu danh sách máy
+        let editId = null;   // Lưu id đang sửa
+
+        // ====== LẤY DỮ LIỆU API ======
         fetch("https://api.restful-api.dev/objects")
-            .then(response => response.json())
-            .then(apiData => {
-                let dataList = apiData.map(item => ({
+            .then(res => res.json())
+            .then(data => {
+                dataList = data.map(item => ({
                     id: item.id,
                     name: item.name,
                     color: item.data?.color ?? "",
                     capacity: item.data?.capacity ?? ""
                 }));
 
-                // Hàm render bảng
-                function renderTable(list) {
-                    const tableBody = document.getElementById("device-table");
-                    tableBody.innerHTML = "";
-                    list.forEach(item => {
-                        tableBody.innerHTML += `
-            <tr>
-                <td>${item.id}</td>
-                <td>${item.name}</td>
-                <td>${item.color}</td>
-                <td>${item.capacity}</td>
-                <td>
-                    <button class="edit-btn" data-id="${item.id}">Sửa</button>
-                    <button class="delete-btn" data-id="${item.id}">Xóa</button>
-                </td>
-            </tr>`;
-                    });
-                }
                 renderTable(dataList);
-                // Tìm kiếm
-                const search = document.getElementById("search");
-                search.addEventListener("input", function () {
-                    const keyword = this.value.toLowerCase();
-                    const filtered = dataList.filter(item =>
-                        item.name.toLowerCase().includes(keyword) ||
-                        item.color.toLowerCase().includes(keyword) ||
-                        item.capacity.toLowerCase().includes(keyword)
-                    );
-                    renderTable(filtered);
-                });
-                // Thêm sản phẩm
-                const addBtn = document.getElementById("add-btn");
-                addBtn.addEventListener("click", function () {
-                    const popup = document.getElementById("popup");
-                    const popupTitle = document.getElementById("popup-title");
-                    const inputName = document.getElementById("input-name");
-                    const inputColor = document.getElementById("input-color");
-                    const inputCapacity = document.getElementById("input-capacity");
-                    const saveBtn = document.getElementById("save-btn");
-
-                    popupTitle.textContent = "Thêm sản phẩm";
-                    inputName.value = "";
-                    inputColor.value = "";
-                    inputCapacity.value = "";
-                    popup.style.display = "block";
-
-                    saveBtn.onclick = function () {
-                        const name = inputName.value.trim();
-                        const color = inputColor.value.trim();
-                        const capacity = inputCapacity.value.trim();
-                        if (!name) {
-                            alert("Tên sản phẩm không được để trống");
-                            return;
-                        }
-                        // Tạo id mới cho sản phẩm vừa thêm
-                        // - Không trùng id - Nếu id rỗng thì bắt đầu từ 1
-                        // - sau khi lấy id lớn nhất thì +1 để tạo id mới
-                        const newId = dataList.length ? Math.max(...dataList.map(x => x.id)) + 1 : 1;
-                        dataList.push({
-                            id: newId, name, color, capacity
-                        });
-                        renderTable(dataList);
-                        popup.style.display = "none";
-                    };
-                });
-
-                // Đóng lại popup
-                const closeBtn = document.getElementById("close-btn");
-                const popup = document.getElementById("popup");
-                closeBtn.addEventListener("click", function () {
-                    popup.style.display = "none";
-                });
-                // Sửa, xóa
-                const deviceTable = document.getElementById("device-table");
-                deviceTable.addEventListener("click", function (e) {
-                    const id = parseInt(e.target.dataset.id);
-                    if (e.target.classList.contains("edit-btn")) {
-                        const item = dataList.find(x => x.id === id);
-                        if (item) {
-                            popupTitle.textContent = "Sửa sản phẩm";
-                            inputName.value = item.name;
-                            inputColor.value = item.color;
-                            inputCapacity.value = item.capacity;
-                            popup.style.display = "block";
-
-                            saveBtn.onclick = function () {
-                                item.name = inputName.value.trim();
-                                item.color = inputColor.value.trim();
-                                item.capacity = inputCapacity.value.trim();
-                                renderTable(dataList);
-                                popup.style.display = "none";
-                            };
-                        }
-                    }
-                    if (e.target.classList.contains("delete-btn")) {
-                        if (confirm("Bạn chắc chắn muốn xóa sản phẩm này?")) {
-                            dataList = dataList.filter(x => x.id !== id);
-                            renderTable(dataList);
-                        }
-                    }
-                });
-
             });
+
+        // ====== HÀM HIỂN THỊ BẢNG ======
+        function renderTable(list) {
+            const table = document.getElementById("device-table");
+            table.innerHTML = "";
+
+            list.forEach(item => {
+                table.innerHTML += `
+                <tr>
+                    <td>${item.id}</td>
+                    <td>${item.name}</td>
+                    <td>${item.color}</td>
+                    <td>${item.capacity}</td>
+                    <td>
+                        <button class="edit-btn" data-id="${item.id}">Sửa</button>
+                        <button class="delete-btn" data-id="${item.id}">Xóa</button>
+                    </td>
+                </tr>`;
+            });
+        }
+
+        // ====== TÌM KIẾM ======
+        document.getElementById("search").addEventListener("input", function () {
+            let key = this.value.toLowerCase();
+
+            let filtered = dataList.filter(item =>
+                item.name.toLowerCase().includes(key) ||
+                item.color.toLowerCase().includes(key) ||
+                item.capacity.toLowerCase().includes(key)
+            );
+
+            renderTable(filtered);
+        });
+
+        // ====== MỞ POPUP THÊM ======
+        document.getElementById("add-btn").onclick = function () {
+            editId = null; // đang ở chế độ thêm
+
+            document.getElementById("popup-title").textContent = "Thêm sản phẩm";
+            document.getElementById("input-name").value = "";
+            document.getElementById("input-color").value = "";
+            document.getElementById("input-capacity").value = "";
+
+            document.getElementById("popup").style.display = "block";
+        };
+
+        // ====== SỰ KIỆN BẤM LƯU ======
+        document.getElementById("save-btn").onclick = function () {
+            const name = document.getElementById("input-name").value.trim();
+            const color = document.getElementById("input-color").value.trim();
+            const capacity = document.getElementById("input-capacity").value.trim();
+
+            if (!name) {
+                alert("Tên sản phẩm không được để trống");
+                return;
+            }
+
+            // ---- SỬA ----
+            if (editId !== null) {
+                const item = dataList.find(x => x.id === editId);
+                item.name = name;
+                item.color = color;
+                item.capacity = capacity;
+            }
+            // ---- THÊM ----
+            else {
+                const newId = dataList.length ? Math.max(...dataList.map(x => x.id)) + 1 : 1;
+                dataList.push({ id: newId, name, color, capacity });
+            }
+
+            renderTable(dataList);
+            document.getElementById("popup").style.display = "none";
+        };
+
+        // ====== ĐÓNG POPUP ======
+        document.getElementById("close-btn").onclick = function () {
+            document.getElementById("popup").style.display = "none";
+        };
+
+        // ====== SỬA / XÓA ======
+        document.getElementById("device-table").onclick = function (e) {
+            if (!e.target.dataset.id) return;
+
+            const id = parseInt(e.target.dataset.id);
+
+            // ---- SỬA ----
+            if (e.target.classList.contains("edit-btn")) {
+                const item = dataList.find(x => x.id == id);
+
+                editId = id;
+
+                document.getElementById("popup-title").textContent = "Sửa sản phẩm";
+                document.getElementById("input-name").value = item.name;
+                document.getElementById("input-color").value = item.color;
+                document.getElementById("input-capacity").value = item.capacity;
+
+                document.getElementById("popup").style.display = "block";
+            }
+
+            // ---- XÓA ----
+            if (e.target.classList.contains("delete-btn")) {
+                if (confirm("Xóa sản phẩm này?")) {
+                    dataList = dataList.filter(item => item.id !== id);
+                    renderTable(dataList);
+                }
+            }
+        };
     </script>
+
 </body>
 
 </html>
