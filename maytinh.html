@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Máy tính</title>
     <style>
         body {
             width: 500px;
@@ -160,7 +160,7 @@
     </div>
     <div id="result">=</div>
 
-    <script>
+    <!-- <script>
         let numbers = document.querySelectorAll(".numbers div");
         let operators = document.querySelectorAll(".operators div");
         let result = document.getElementById("result");
@@ -168,7 +168,7 @@
         let input = document.getElementById("input");
         let resultDisplayed = false;
         numbers.forEach(function (number) {
-            number.addEventListener("click", function (e) {
+            numbers.addEventListener("click", function (e) {
                 let currentString = input.innerHTML;
                 let lastChar = currentString.slice(-1);
                 if (!resultDisplayed) {
@@ -217,6 +217,76 @@
                 }
             }
 
+            process("÷", (a, b) => a / b);
+            process("×", (a, b) => a * b);
+            process("-", (a, b) => a - b);
+            process("+", (a, b) => a + b);
+
+            input.innerHTML = numbers[0];
+            resultDisplayed = true;
+        });
+        clear.addEventListener("click", function () {
+            input.innerHTML = "";
+            resultDisplayed = false;
+        });
+
+    </script> -->
+
+    <script>
+        let numbers = document.querySelectorAll(".numbers div");
+        let operators = document.querySelectorAll(".operators div");
+        let clear = document.getElementById("clear");
+        let result = document.getElementById("result");
+        let resultDisplayed = false;
+        let input = document.getElementById("input");
+
+        numbers.forEach(function (numbers) {
+            numbers.addEventListener("click", function (e) {
+                let currentString = input.innerHTML;
+                let lastChar = currentString.slice(-1);
+                if (!resultDisplayed) {
+                    input.innerHTML += e.target.innerHTML;
+                }
+                else {
+                    if (["÷", "×", "-", "+"].includes(lastChar)) {
+                        input.innerHTML += e.target.innerHTML;
+                    }
+                    else {
+                        input.innerHTML = e.target.innerHTML;
+                    }
+                    resultDisplayed = false;
+                }
+            })
+        });
+        operators.forEach(function (operators) {
+            operators.addEventListener("click", function (e) {
+                let currentString = input.innerHTML;
+                let lastChar = currentString.slice(-1);
+                if (currentString === "") return;
+                if (["÷", "×", "-", "+"].includes(lastChar)) {
+                    input.innerHTML = currentString.slice(0, -1) + e.target.innerHTML;
+                }
+                else {
+                    input.innerHTML += e.target.innerHTML;
+                }
+            })
+        });
+        result.addEventListener("click", function () {
+            let inputString = input.innerHTML;
+            let numbersArr = inputString.split(/[\÷\×\+\-]/g).map(Number);
+            let operatorsArr = inputString.replace(/[0-9]|\./g, "").split("");
+
+            let numbers = numbersArr.slice();
+            let operators = operatorsArr.slice();
+
+            function process(operator, fn) {
+                let index = operators.indexOf(operator);
+                while (index !== -1) {
+                    numbers.splice(index, 2, fn(numbers[index], numbers[index + 1]));
+                    operators.splice(index, 1);
+                    index = operators.indexOf(operator);
+                }
+            }
             process("÷", (a, b) => a / b);
             process("×", (a, b) => a * b);
             process("-", (a, b) => a - b);
